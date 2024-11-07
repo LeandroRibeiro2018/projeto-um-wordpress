@@ -17,6 +17,11 @@
 /wp-*.php
 /xmlrpc.php
 
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+.env
+
 # Configuration
 wp-config.php
 
