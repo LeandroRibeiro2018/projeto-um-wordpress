@@ -22,7 +22,6 @@ pipeline {
             steps {
                 script {
                     // Exemplo de instalação de dependências para o Wordpress (caso seja necessário)
-                    // Comandos de instalação para o WordPress ou outros pacotes podem ser executados aqui
                     sh 'composer install' // ou outro comando que você precise, dependendo da sua configuração
                 }
             }
@@ -31,23 +30,25 @@ pipeline {
         stage('Deploy no WordPress') {
             steps {
                 script {
-                    // Aqui você pode adicionar comandos para fazer o deploy ou configurar o WordPress
-                    // Exemplo de envio de comandos HTTP para login ou configuração do WordPress
-                    // Aqui você pode usar o `curl` ou alguma outra ferramenta para interagir com a API do WordPress
+                    // Obter o token JWT de autenticação via API REST do WordPress
+                    def response = sh(
+                        script: '''
+                        curl --silent --request POST \
+                            --url http://localhost/wordpress/wordpress/wp-json/jwt-auth/v1/token \
+                            --header 'Content-Type: application/json' \
+                            --data '{"username": "${WP_USER}", "password": "${WP_PASSWORD}"}'
+                        ''', 
+                        returnStdout: true
+                    )
                     
-                    // Exemplo de login via API REST ou qualquer outro comando de deploy:
+                    def jsonResponse = readJSON text: response
+                    def WP_TOKEN = jsonResponse.token
+                    
+                    // Exemplo de upload de arquivos para o WordPress
                     sh '''
                     curl --request POST \
-                        --url http://seu-servidor-wordpress/wp-json/jwt-auth/v1/token \
-                        --header 'Content-Type: application/json' \
-                        --data '{"username": "${WP_USER}", "password": "${WP_PASSWORD}"}'
-                    '''
-                    
-                    // Exemplo de upload de arquivos para o WordPress:
-                    sh '''
-                    curl --request POST \
-                        --url http://seu-servidor-wordpress/wp-json/wp/v2/media \
-                        --header 'Authorization: Bearer '${WP_TOKEN}'' \
+                        --url http://localhost/wordpress/wordpress/wp-json/wp/v2/media \
+                        --header 'Authorization: Bearer ${WP_TOKEN}' \
                         --header 'Content-Type: multipart/form-data' \
                         --form 'file=@"caminho/para/o/arquivo.jpg"'
                     '''
@@ -58,17 +59,14 @@ pipeline {
     
     post {
         always {
-            // Aqui você pode adicionar comandos para limpar ou realizar outras ações após a execução
             echo 'Pipeline executado com sucesso!'
         }
         
         success {
-            // Mensagem caso o pipeline seja bem-sucedido
             echo 'Deploy realizado com sucesso!'
         }
         
         failure {
-            // Mensagem caso o pipeline falhe
             echo 'Ocorreu um erro durante a execução do pipeline!'
         }
     }
