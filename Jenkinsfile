@@ -10,9 +10,13 @@ pipeline {
     
     stages {
         stage('Clonar Repositório') {
-             git url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git,
-            credentialsId: 'TokenGit',
-            branch: 'main'
+            steps{
+                script{
+                git url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git,
+                credentialsId: 'TokenGit',
+                branch: 'main'
+                }
+            }
         }
         
         stage('Instalar Dependências') {
