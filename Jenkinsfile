@@ -2,20 +2,17 @@ pipeline {
     agent any
     
     environment {
-        GIT_URL = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'
-        GIT_CREDENTIALS_ID = 'Token-Git' // ID das credenciais de autenticação Git no Jenkins
+        //GIT_URL = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'
+        //GIT_CREDENTIALS_ID = 'Token-Git' // ID das credenciais de autenticação Git no Jenkins
         WP_USER = 'admin'
         WP_PASSWORD = 'admin123*'
     }
     
     stages {
         stage('Clonar Repositório') {
-            steps {
-                script {
-                    // Clonando o repositório Git com autenticação via Token
-                    git credentialsId: GIT_CREDENTIALS_ID, url: GIT_URL
-                }
-            }
+             git url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git,
+            credentialsId: 'TokenGit',
+            branch: 'main'
         }
         
         stage('Instalar Dependências') {
