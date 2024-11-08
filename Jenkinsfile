@@ -1,74 +1,42 @@
 pipeline {
     agent any
-    
-    environment {
-        //GIT_URL = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'
-        //GIT_CREDENTIALS_ID = 'Token-Git' // ID das credenciais de autenticação Git no Jenkins
-        WP_USER = 'admin'
-        WP_PASSWORD = 'admin123*'
-    }
-    
     stages {
-        stage('Clonar Repositório') {
-            steps{
-                script{
-                git url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git,
-                credentialsId: 'TokenGit',
-                branch: 'main'
-                }
-            }
-        }
-        
-        stage('Instalar Dependências') {
+        stage('Verificar Git') {
             steps {
                 script {
-                    // Exemplo de instalação de dependências para o Wordpress (caso seja necessário)
-                    sh 'composer install' // ou outro comando que você precise, dependendo da sua configuração
+                    // Verifica se o Git está instalado
+                    def gitVersion = sh(script: 'git --version', returnStatus: true)
+                    if (gitVersion != 0) {
+                        error "Git não está instalado ou não foi configurado corretamente. Configure o Git nas Ferramentas Globais do Jenkins."
+                    } else {
+                        echo "Git está instalado e configurado corretamente."
+                    }
                 }
             }
         }
         
-        stage('Deploy no WordPress') {
+        stage('Checkout do Código') {
             steps {
-                script {
-                    // Obter o token JWT de autenticação via API REST do WordPress
-                    def response = sh(
-                        script: '''
-                        curl --silent --request POST \
-                            --url http://localhost/wordpress/wordpress/wp-json/jwt-auth/v1/token \
-                            --header 'Content-Type: application/json' \
-                            --data '{"username": "${WP_USER}", "password": "${WP_PASSWORD}"}'
-                        ''', 
-                        returnStdout: true
-                    )
-                    
-                    def jsonResponse = readJSON text: response
-                    def WP_TOKEN = jsonResponse.token
-                    
-                    // Exemplo de upload de arquivos para o WordPress
-                    sh '''
-                    curl --request POST \
-                        --url http://localhost/wordpress/wordpress/wp-json/wp/v2/media \
-                        --header 'Authorization: Bearer ${WP_TOKEN}' \
-                        --header 'Content-Type: multipart/form-data' \
-                        --form 'file=@"caminho/para/o/arquivo.jpg"'
-                    '''
-                }
+                // Realiza o checkout do repositório usando as credenciais configuradas
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                    userRemoteConfigs: [[url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git', credentialsId: 'SUA_CREDENCIAL_ID']]
+                ])
             }
         }
-    }
-    
-    post {
-        always {
-            echo 'Pipeline executado com sucesso!'
+        
+        // Demais estágios do pipeline
+        stage('Build') {
+            steps {
+                // Coloque os passos de build aqui
+            }
+        }
+
+        stage('Test') {
+            steps {
+                // Coloque os passos de teste aqui
+            }
         }
         
-        success {
-            echo 'Deploy realizado com sucesso!'
-        }
-        
-        failure {
-            echo 'Ocorreu um erro durante a execução do pipeline!'
-        }
+        // Outros estágios do pipeline podem seguir aqui
     }
 }
