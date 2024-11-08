@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        GIT_URL = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress'
+        GIT_URL = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'
         GIT_CREDENTIALS_ID = 'Token-Git' // ID das credenciais de autenticação Git no Jenkins
         WP_USER = 'admin'
         WP_PASSWORD = 'admin123*'
