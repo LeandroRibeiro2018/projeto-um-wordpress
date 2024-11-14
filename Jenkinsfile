@@ -1,42 +1,54 @@
 pipeline {
     agent any
+    environment {
+        GIT_REPO = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'  // Endereço do repositório GitHub
+        DEPLOY_PATH = 'C:\\xampp\\htdocs\\wordpress'  // Caminho do XAMPP no Windows
+        WP_USER = 'admin'
+        WP_PASS = 'admin123*'
+    }
     stages {
-        stage('Verificar Git') {
+        stage('Checkout') {
             steps {
-                script {
-                    // Verifica se o Git está instalado
-                    def gitVersion = sh(script: 'git --version', returnStatus: true)
-                    if (gitVersion != 0) {
-                        error "Git não está instalado ou não foi configurado corretamente. Configure o Git nas Ferramentas Globais do Jenkins."
-                    } else {
-                        echo "Git está instalado e configurado corretamente."
-                    }
+                // Clona o repositório GitHub usando o token armazenado
+                withCredentials([string(credentialsId: 'tokenGithub', variable: 'GITHUB_TOKEN')]) {
+                    // Autentica com GitHub utilizando o token
+                    bat "git clone https://${GITHUB_TOKEN}@${GIT_REPO} ."
                 }
             }
         }
-        
-        stage('Checkout do Código') {
+        stage('Testes') {
             steps {
-                // Realiza o checkout do repositório usando as credenciais configuradas
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
-                    userRemoteConfigs: [[url: 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git', credentialsId: 'SUA_CREDENCIAL_ID']]
-                ])
+                // Exemplo de execução de testes, caso existam
+                bat 'phpunit --configuration phpunit.xml'
             }
         }
-        
-        // Demais estágios do pipeline
         stage('Build') {
             steps {
-                // Coloque os passos de build aqui
+                echo 'Etapa de Build - Adicione passos de build aqui se necessário'
             }
         }
-
-        stage('Test') {
+        stage('Deploy') {
             steps {
-                // Coloque os passos de teste aqui
+                // Deploy para o servidor local (XAMPP)
+                bat "xcopy /E /H /Y . ${DEPLOY_PATH}"
             }
         }
-        
-        // Outros estágios do pipeline podem seguir aqui
+        stage('WordPress Authentication') {
+            steps {
+                // Executa comandos WP-CLI no ambiente local
+                bat """
+                cd ${DEPLOY_PATH} && \
+                wp plugin list --allow-root --user=${WP_USER} --prompt=${WP_PASS}
+                """
+            }
+        }
+    }
+    post {
+        success {
+            echo 'Deploy realizado com sucesso!'
+        }
+        failure {
+            echo 'Erro no deploy!'
+        }
     }
 }
