@@ -9,9 +9,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clona o repositório GitHub usando o token armazenado
+                // Clona o repositório GitHub usando o token armazenado como StringCredentials
                 withCredentials([string(credentialsId: 'tokenGithub', variable: 'GITHUB_TOKEN')]) {
-                    // Autentica com GitHub utilizando o token
+                    // Autentica com GitHub utilizando o token como StringCredentials
                     bat "git clone https://${GITHUB_TOKEN}@${GIT_REPO} ."
                 }
             }
