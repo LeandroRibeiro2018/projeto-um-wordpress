@@ -1,7 +1,6 @@
 pipeline {
     agent any
     environment {
-        GIT_REPO = 'https://github.com/LeandroRibeiro2018/projeto-um-wordpress.git'  // Endereço do repositório GitHub
         DEPLOY_PATH = 'C:\\xampp\\htdocs\\wordpress'  // Caminho do XAMPP no Windows
         WP_USER = 'admin'
         WP_PASS = 'admin123*'
@@ -9,8 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Clona o repositório GitHub sem autenticação (para repositórios públicos)
-                bat "git clone ${GIT_REPO} ."
+                echo 'Código já disponível após o checkout automático do Jenkins'
             }
         }
         stage('Testes') {
