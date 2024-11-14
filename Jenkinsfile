@@ -1,9 +1,9 @@
 pipeline {
     agent any
     environment {
-        DEPLOY_PATH = 'C:\\xampp\\htdocs\\wordpress'  // Caminho do XAMPP no Windows
-        WP_USER = 'admin'
-        WP_PASS = 'admin123*'
+        DEPLOY_PATH = 'C:\\xampp\\htdocs\\wordpress'  // Ajuste o caminho conforme necessário
+        WP_USER = 'admin'   // Altere para o usuário WordPress
+        WP_PASS = 'admin123*' // Altere para a senha WordPress
     }
     stages {
         stage('Checkout') {
@@ -13,7 +13,7 @@ pipeline {
         }
         stage('Testes') {
             steps {
-                // Exemplo de execução de testes, caso existam
+                // Exemplo para executar testes, remova se não for necessário
                 bat 'phpunit --configuration phpunit.xml'
             }
         }
@@ -24,13 +24,13 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                // Deploy para o servidor local (XAMPP)
+                // Copia arquivos para o diretório do XAMPP
                 bat "xcopy /E /H /Y . ${DEPLOY_PATH}"
             }
         }
         stage('WordPress Authentication') {
             steps {
-                // Executa comandos WP-CLI no ambiente local
+                // Executa comandos WP-CLI no ambiente WordPress
                 bat """
                 cd ${DEPLOY_PATH} && \
                 wp plugin list --allow-root --user=${WP_USER} --prompt=${WP_PASS}
